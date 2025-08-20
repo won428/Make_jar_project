@@ -8,32 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 //데이터 베이스와 직접 연동하여 CRUD 작업을 수행해주는 DAO 클래스
-public class MemberDao {
-
+public class MemberDao extends Dao{
     public MemberDao(){
-        // 드라이버 관련 OracleDriver 클래스는 ojdbc6.jar 파일에 포함되어 있는 자바 클래스입니다.
-        String driver = "oracle.jdbc.driver.OracleDriver";
-        try {
-            Class.forName(driver); // 동적 객체 생성하는 문법입니다.
-        } catch (ClassNotFoundException e) {
-            System.out.println("해당 드라이버가 존재하지 않습니다.");
-            e.printStackTrace();
-        }
+        
+        super();
     }
-
-    public Connection getConnection(){
-        Connection conn = null; // 접속 객체
-        String url = "jdbc:oracle:thin:@localhost:1521:xe";
-        String id = "oraman";
-        String password = "oracle";
-        try {
-            conn = DriverManager.getConnection(url, id, password);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return conn;
-    }
+    
 
     public int getSize() {
         String sql = "select count(*) as cnt from members";
@@ -42,7 +22,8 @@ public class MemberDao {
         Connection conn = null;
         int cnt = 0; // 검색된 회원 명수
         try {
-            conn = this.getConnection(); // 접속 객체 구하기
+            conn = super.getConnection();
+ // 접속 객체 구하기
             pstmt = conn.prepareStatement(sql);
             rs = pstmt.executeQuery();
 
@@ -70,7 +51,8 @@ public class MemberDao {
         Connection conn = null;
         String sql = "SELECT * FROM MEMBERS ORDER BY NAME ASC";
         try {
-            conn = this.getConnection();
+            conn = super.getConnection();
+
             pstme = conn.prepareStatement(sql);
             rs = pstme.executeQuery();
             while(rs.next()){
@@ -111,7 +93,8 @@ public class MemberDao {
         ResultSet rs = null;
 
         try{
-            conn = this.getConnection();
+            conn = super.getConnection();
+
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1,gender);
             rs = pstmt.executeQuery();
@@ -143,7 +126,7 @@ public class MemberDao {
         return members;
     }
 
-    public Member getMemberOn(String id) {
+    public Member getMemberOne(String id) {
         Member someone = null;
         String sql = "SELECT * FROM MEMBERS WHERE id = ?";
         Connection conn = null;
@@ -151,7 +134,8 @@ public class MemberDao {
         ResultSet rs = null;
         Member m = null;
         try{
-            conn = this.getConnection();
+            conn = super.getConnection();
+
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1,id);
             rs = pstmt.executeQuery();
@@ -161,7 +145,7 @@ public class MemberDao {
                 m.setName(rs.getString("name"));
                 m.setPassword(rs.getString("password"));
                 m.setGender(rs.getString("gender"));
-                m.setBirth(rs.getString("birth"));
+                m.setBirth(String.valueOf(rs.getDate("birth")));
                 m.setMarriage(rs.getString("marriage"));
                 m.setSalary(rs.getInt("salary"));
                 m.setAddress(rs.getString("address"));
@@ -192,7 +176,8 @@ public class MemberDao {
         PreparedStatement pstmt = null;
 
         try{
-          conn = this.getConnection();
+          conn = super.getConnection();
+
           pstmt = conn.prepareStatement(sql);
           pstmt.setString(1,id);
           cnt = pstmt.executeUpdate();
@@ -221,7 +206,8 @@ public class MemberDao {
         PreparedStatement pstmt = null;
         int cnt = -1;
         try {
-            conn = this.getConnection();
+            conn = super.getConnection();
+
             pstmt = conn.prepareStatement(sql);
             pstmt.setString(1,id);
             pstmt.setString(2,name);
@@ -244,6 +230,90 @@ public class MemberDao {
             try {
                 if(pstmt != null){pstmt.close();}
                 if(conn != null){conn.close();}
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
+        }
+
+        return cnt;
+    }
+
+    public int insertInData(Member m) {
+        // 웹 페이지에서 회원정보를 입력하고 '가입'버튼을 눌렀습니다.
+        int cnt = -1;
+        String sql = "INSERT INTO MEMBERS(id, name, password, gender, birth, marriage, salary, address, manager)";
+        sql += " VALUES(?,?,?,?,?,?,?,?,?)";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = super.getConnection();
+
+            pstmt = conn.prepareStatement(sql);
+
+            pstmt.setString(1,m.getId());
+            pstmt.setString(2,m.getName());
+            pstmt.setString(3,m.getPassword());
+            pstmt.setString(4,m.getGender());
+            pstmt.setString(5,m.getBirth());
+            pstmt.setString(6,m.getMarriage());
+            pstmt.setInt(7,m.getSalary());
+            pstmt.setString(8,m.getAddress());
+            pstmt.setString(9,m.getManager());
+            cnt = pstmt.executeUpdate();
+            conn.commit();
+        }catch (Exception ex){
+            try {
+                  conn.rollback();
+            }catch (Exception ex2){
+                ex2.printStackTrace();
+            }
+        }finally {
+            try {
+                if(pstmt != null){pstmt.close();}
+                if(conn != null){conn.close();}
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
+        }
+        return cnt ;
+    }
+
+
+    public int updateData(Member m) {
+        int cnt = -1;
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        String sql = "update members set name = ?, password = ?, gender = ?, birth =?, marriage = ?, salary = ?, address = ?, manager = ? ";
+        sql += " where id = ?";
+
+        try {
+            conn = super.getConnection();
+
+            pstmt = conn.prepareStatement(sql);
+
+            pstmt.setString(1, m.getName());
+            pstmt.setString(2, m.getPassword());
+            pstmt.setString(3, m.getGender());
+            pstmt.setString(4, m.getBirth());
+            pstmt.setString(5, m.getMarriage());
+            pstmt.setInt(6, m.getSalary());
+            pstmt.setString(7, m.getAddress());
+            pstmt.setString(8, m.getManager());
+            pstmt.setString(9, m.getId());
+            cnt = pstmt.executeUpdate();
+
+        }catch (Exception ex){
+            try {
+                ex.printStackTrace();
+                conn.rollback();
+            }catch (Exception ex2){
+                ex2.printStackTrace();
+            }
+        }finally {
+            try {
+                if(pstmt != null){pstmt.close();};
+                if(conn != null){conn.close();};
             }catch (Exception ex){
                 ex.printStackTrace();
             }

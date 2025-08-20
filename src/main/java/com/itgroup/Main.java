@@ -1,14 +1,11 @@
 package com.itgroup;
 
-import com.itgroup.bean.Member;
-
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
-        MemberManager manager = new MemberManager();
-        Member member = new Member();
+        DataManager manager = new DataManager();
         String id;
         String name;
         String password;
@@ -21,7 +18,8 @@ public class Main {
 
         while(true){
             System.out.println("메뉴 선택");
-            System.out.println("0: 종료, 1: 목록 조회, 2: 가입, 3: 수정, 4: 총회원수, 5: 탈퇴, 6: 회원정보. 7: 성별조회, 8: 상세보기");
+            System.out.println("0: 종료, 1: 목록 조회, 2: 가입, 3: 수정, 4: 총회원수, 5: 탈퇴, 6: 회원정보. 7: 성별조회, 8: 상세보기, 9: 회원가입2");
+            System.out.println("11: 게시물 전체, 12: 게시물 등록, 13: 게시물 수정, 14: 게시물 전체 건수, 15: 게시물 삭제, 16: 게시물 검색, 17: 짝수 번호만 조회");
             int menu = scan.nextInt();
             switch (menu){
                 case 0:
@@ -53,6 +51,7 @@ public class Main {
                     manager.insertInfo(id, name,password, gender,birth, marriage, salary, address, member_manager);
                     break;
                 case 3:
+                    manager.updateData();
                     break;
                 case 4:
                     manager.getSize();
@@ -74,6 +73,25 @@ public class Main {
                     System.out.println("검색할 ID를 입력하세요");
                     String findid = scan.next();
                     manager.getMemberOne(findid);
+                    break;
+                case 9:
+                    manager.insertData();
+                    break;
+                case 11:
+                    manager.selectAllBoard();
+                    break;
+                case 12:
+                    break;
+                case 13:
+                    break;
+                case 14:
+                    break;
+                case 15:
+                    break;
+                case 16:
+                    break;
+                case 17:
+                    manager.selectEvenDate();
                     break;
 
             }
